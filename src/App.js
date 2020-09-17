@@ -1,24 +1,56 @@
-import React from 'react';
-import logo from './logo.svg';
+import { Button, FormControl, Input, InputLabel } from '@material-ui/core';
+import React, { useEffect, useState } from 'react';
 import './App.css';
+import db from './firebase';
+import Todo from './Todo';
 
 function App() {
+  const [todos, setTodos] = useState(['Learn English', 'Go to School']);
+  const [input, setInput] = useState('');
+
+  // When the app load,  we need to listen to the database and fetch new todos as they get added/removed
+
+  useEffect(() => {
+
+    db.collection('todos').onSnapshot(snapshot => {
+      setTodos(snapshot.docs.map(doc => doc.data().todo))
+    });
+
+  }, []);
+
+  const addTodo = (e) => {
+    // this will fire off when we click the button
+    e.preventDefault();
+    console.log('Add Todo');
+    setTodos([...todos, input]);
+    setInput(''); // lear up the input after clicking add todo button
+  }
+
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <h1>Hello Clever Programmers🚀 !</h1>
+
+      <form>
+
+        <FormControl>
+          <InputLabel>✅ Write a Todo</InputLabel>
+          <Input value={input} onChange={e => setInput(e.target.value)} />
+        </FormControl>
+
+        <Button disabled={!input} type="submit" onClick={addTodo} variant="contained" color="primary">
+          Add Todo
+        </Button>
+        {/* <button type="submit" onClick={addTodo} >Add Todo</button> */}
+      </form>
+
+      <ul>
+        {
+          todos.map((item, index) =>
+            <Todo key={index} todo={item} />
+          )
+        }
+      </ul>
     </div>
   );
 }
